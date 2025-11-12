@@ -255,54 +255,58 @@ function FileDrop({ label, accept, onFile, previewUrl }) {
 
 function BookCard({ book, onOpen, isAdmin, onEdit, onDelete }) {
   return (
-    <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-lg leading-tight line-clamp-2">{book.title}</CardTitle>
-            <CardDescription className="mt-1">by {book.author}</CardDescription>
-          </div>
-          {isAdmin ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="shrink-0"><MoreHorizontal className="w-5 h-5" /></Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(book)}>
-                  <Pencil className="w-4 h-4 mr-2"/> Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(book.id)} className="text-destructive">
-                  <Trash2 className="w-4 h-4 mr-2"/> Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
+    <Card className="rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col h-full">
+      <CardHeader className="pb-3">
+        <div className="space-y-1">
+          <CardTitle className="text-lg leading-tight line-clamp-2">{book.title}</CardTitle>
+          <CardDescription className="text-xs">{book.author}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex gap-4">
-          {book.coverUrl ? (
-            <img src={book.coverUrl} alt={book.title} className="w-24 h-32 object-cover rounded-xl" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
-          ) : (
-            <div className="w-24 h-32 rounded-xl bg-muted flex items-center justify-center">
-              <BookOpen className="w-8 h-8 opacity-50"/>
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-muted-foreground line-clamp-4">{book.summary}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {book.categories?.slice(0, 3).map((c) => <Badge key={c} variant="outline">{c}</Badge>)}
-              {book.tags?.slice(0, 3).map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}
+      <CardContent className="pt-0 pb-3 flex-1">
+        <div className="flex gap-3 h-full">
+          <div className="flex-shrink-0">
+            {book.coverUrl ? (
+              <img src={book.coverUrl} alt={book.title} className="w-20 h-28 object-cover rounded-lg" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
+            ) : (
+              <div className="w-20 h-28 rounded-lg bg-muted flex items-center justify-center">
+                <BookOpen className="w-6 h-6 opacity-40"/>
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3">{book.summary}</p>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {book.categories?.slice(0, 2).map((c) => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
+              {book.tags?.slice(0, 2).map((t) => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
             </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">{new Date(book.createdAt).toLocaleDateString()}</div>
-        <div className="flex items-center gap-2">
-          {book.audioUrl ? <Button variant="outline" size="sm" onClick={() => onOpen(book)}><Headphones className="w-4 h-4 mr-2"/>Play Overview</Button> : null}
-          <Button size="sm" onClick={() => onOpen(book)}>View</Button>
+      <CardFooter className="flex flex-col gap-2 pt-3 border-t bg-muted/30">
+        <div className="w-full flex items-center gap-2 justify-between">
+          <div className="text-xs text-muted-foreground">{new Date(book.createdAt).toLocaleDateString()}</div>
+          <Button size="sm" onClick={() => onOpen(book)} className="text-xs h-8">View Details</Button>
         </div>
+        {isAdmin && (
+          <div className="w-full flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => onEdit(book)} 
+              className="flex-1 text-xs h-8 justify-center"
+            >
+              <Pencil className="w-3 h-3 mr-1"/> Edit
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={() => onDelete(book.id)} 
+              className="flex-1 text-xs h-8 justify-center"
+            >
+              <Trash2 className="w-3 h-3 mr-1"/> Delete
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
@@ -317,47 +321,48 @@ function BookModal({ open, onOpenChange, book }) {
   }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">{book?.title}</DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-3xl font-bold tracking-tight">{book?.title}</DialogTitle>
         </DialogHeader>
         {book ? (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
               {book.coverUrl ? (
-                <img src={book.coverUrl} alt={book.title} className="w-full aspect-[3/4] object-cover rounded-2xl" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
+                <img src={book.coverUrl} alt={book.title} className="w-full aspect-[3/4] object-cover rounded-2xl shadow-lg" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
               ) : (
-                <div className="w-full aspect-[3/4] rounded-2xl bg-muted flex items-center justify-center">
-                  <BookOpen className="w-10 h-10 opacity-50"/>
+                <div className="w-full aspect-[3/4] rounded-2xl bg-muted flex items-center justify-center shadow-lg">
+                  <BookOpen className="w-12 h-12 opacity-30"/>
                 </div>
               )}
             </div>
-            <div className="md:col-span-2 space-y-4">
-              <div>
-                <div className="text-sm text-muted-foreground">by {book.author}</div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {book.categories?.map((c) => <Badge key={c} variant="outline">{c}</Badge>)}
-                  {book.tags?.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}
+            <div className="md:col-span-2 space-y-6">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">by {book.author}</p>
+                <div className="flex flex-wrap gap-2">
+                  {book.categories?.map((c) => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
+                  {book.tags?.map((t) => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
                 </div>
               </div>
               {book.audioUrl ? (
-                <div className="space-y-2">
-                  <Label>Audio Overview</Label>
-                  <audio ref={audioRef} controls src={book.audioUrl} className="w-full rounded-xl" />
+                <div className="space-y-3 rounded-xl bg-muted/50 p-4">
+                  <div className="text-sm font-semibold">Audio Overview</div>
+                  <audio ref={audioRef} controls src={book.audioUrl} className="w-full h-8 rounded" />
                 </div>
               ) : null}
-              <Separator />
-              <div className="space-y-2">
-                <Label>Summary</Label>
-                <p className="text-sm leading-6 whitespace-pre-wrap">{book.summary}</p>
+              <Separator className="my-4" />
+              <div className="space-y-3">
+                <div className="text-sm font-semibold">Summary</div>
+                <p className="text-sm leading-7 text-muted-foreground whitespace-pre-wrap">{book.summary}</p>
               </div>
               {book.notes?.length ? (
-                <div className="space-y-2">
-                  <Label>Notes</Label>
-                  <ul className="list-disc pl-6 text-sm space-y-1">
+                <div className="space-y-3">
+                  <div className="text-sm font-semibold">Key Takeaways</div>
+                  <ul className="space-y-2">
                     {book.notes.map((n) => (
-                      <li key={n.id}>
-                        <span className="font-medium">{n.title}:</span> {n.content}
+                      <li key={n.id} className="rounded-lg bg-muted/50 p-3 text-sm">
+                        <span className="font-semibold text-primary">{n.title}:</span>
+                        <p className="text-muted-foreground mt-1">{n.content}</p>
                       </li>
                     ))}
                   </ul>
@@ -558,56 +563,68 @@ export default function BulkBukApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <BookOpen className="w-6 h-6" />
-          <h1 className="text-xl font-semibold tracking-tight">BulkBuk</h1>
-          <Badge className="ml-2" variant="secondary">Books • Summaries • Audio Overviews</Badge>
-          <div className="ml-auto flex items-center gap-3">
+      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">BulkBuk</h1>
+              <p className="text-xs text-muted-foreground">Books • Summaries • Insights</p>
+            </div>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
             {/* Theme toggle */}
-            <Button variant="ghost" size="sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
-              {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme" className="rounded-lg">
+              {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </Button>
 
             {isAdmin ? (
               <>
-                <Button variant="outline" size="sm" onClick={openCreate}><Plus className="w-4 h-4 mr-2"/>New Book</Button>
-                <Button variant="ghost" size="sm" onClick={logout}><LogOut className="w-4 h-4 mr-2"/>Exit Admin</Button>
+                <Button size="sm" onClick={openCreate} className="gap-1"><Plus className="w-4 h-4"/>New Book</Button>
+                <Button variant="outline" size="sm" onClick={logout} className="gap-1"><LogOut className="w-4 h-4"/>Exit Admin</Button>
               </>
             ) : (
-              <Button variant="ghost" size="sm" onClick={() => setShowAuth(true)}><Shield className="w-4 h-4 mr-2"/>Admin</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowAuth(true)} className="gap-1"><Shield className="w-4 h-4"/>Admin</Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Search & Filters */}
-        <Card className="rounded-2xl">
-          <CardContent className="pt-6">
-            <div className="grid sm:grid-cols-3 gap-3">
-              <div className="sm:col-span-2 flex items-center gap-2 rounded-xl border px-3">
-                <Search className="w-4 h-4"/>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full h-10 bg-transparent outline-none text-sm"
-                  placeholder="Search by title, author, tag…"
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-xl border px-4">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4"/>
-                  <span className="text-sm">Only Published</span>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight">Book Library</h2>
+            <p className="text-sm text-muted-foreground">Discover and explore our curated collection of books with detailed summaries and insights.</p>
+          </div>
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="pt-4 pb-4">
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 flex items-center gap-2 rounded-lg border px-3 h-10 bg-muted/30 focus-within:ring-1 focus-within:ring-primary">
+                  <Search className="w-4 h-4 text-muted-foreground"/>
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full h-full bg-transparent outline-none text-sm"
+                    placeholder="Search by title, author, category…"
+                  />
                 </div>
-                <Switch checked={onlyPublished} onCheckedChange={setOnlyPublished} />
+                <div className="flex items-center justify-between rounded-lg border px-3 h-10 bg-muted/30">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Filter className="w-4 h-4 text-muted-foreground"/>
+                    <span className="font-medium">Published Only</span>
+                  </div>
+                  <Switch checked={onlyPublished} onCheckedChange={setOnlyPublished} />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
           {filtered.map((b) => (
             <motion.div key={b.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
               <BookCard
@@ -620,8 +637,16 @@ export default function BulkBukApp() {
             </motion.div>
           ))}
           {filtered.length === 0 ? (
-            <div className="col-span-full text-center text-sm text-muted-foreground p-10 border rounded-2xl">
-              No books yet. {isAdmin ? "Use New Book to add your first entry." : "Please check back soon!"}
+            <div className="col-span-full">
+              <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <BookOpen className="w-8 h-8 opacity-40" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No books found</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  {isAdmin ? "Create your first book entry by clicking the 'New Book' button above." : "No books match your search criteria. Please check back soon!"}
+                </p>
+              </div>
             </div>
           ) : null}
         </div>
@@ -643,32 +668,80 @@ export default function BulkBukApp() {
       {/* Admin auth dialog */}
       <Dialog open={showAuth} onOpenChange={setShowAuth}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Shield className="w-5 h-5"/> Admin Access</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Enter your admin key to access the dashboard tools.</p>
-            <Input
-              type="password"
-              placeholder="Admin key"
-              value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
-            />
-            <div className="flex gap-2">
-              <Button className="flex-1" onClick={handleLogin}><LogIn className="w-4 h-4 mr-2"/>Sign in</Button>
-              <Button className="flex-1" variant="outline" onClick={() => setShowAuth(false)}>Cancel</Button>
+          <DialogHeader className="space-y-2 pb-4">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+              <Shield className="w-6 h-6 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground">Demo key: <code>bulkbuk_admin_demo_key</code></p>
+            <DialogTitle className="text-2xl">Admin Access</DialogTitle>
+            <p className="text-sm text-muted-foreground font-normal">Enter your admin key to manage the book collection and access dashboard tools.</p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="adminKey" className="text-sm font-medium">Admin Key</Label>
+              <Input
+                id="adminKey"
+                type="password"
+                placeholder="Enter your admin key"
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
+                className="h-10"
+              />
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                <span className="font-semibold">Demo key:</span> <code className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">bulkbuk_admin_demo_key</code>
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button 
+                className="flex-1 h-10" 
+                onClick={handleLogin}
+              >
+                <LogIn className="w-4 h-4 mr-2"/>
+                Sign In
+              </Button>
+              <Button 
+                className="flex-1 h-10" 
+                variant="outline" 
+                onClick={() => setShowAuth(false)}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <footer className="border-t mt-10">
-        <div className="max-w-6xl mx-auto px-4 py-8 text-xs text-muted-foreground flex flex-wrap items-center gap-2">
-          <span>© {new Date().getFullYear()} BulkBuk</span>
-          <span className="mx-2">•</span>
-          <span>Find concise summaries and audio overviews of great books.</span>
+      <footer className="border-t bg-muted/30 mt-16">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="grid sm:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="font-semibold mb-2">About BulkBuk</h3>
+              <p className="text-sm text-muted-foreground">Discover curated book summaries and audio overviews for modern readers.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Features</h3>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li>Book summaries & insights</li>
+                <li>Audio overviews</li>
+                <li>Smart categorization</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Contact</h3>
+              <p className="text-sm text-muted-foreground">Have questions? Reach out to us.</p>
+            </div>
+          </div>
+          <Separator className="my-6" />
+          <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
+            <span>© {new Date().getFullYear()} BulkBuk. All rights reserved.</span>
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-foreground transition">Privacy</a>
+              <a href="#" className="hover:text-foreground transition">Terms</a>
+              <a href="#" className="hover:text-foreground transition">Support</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
