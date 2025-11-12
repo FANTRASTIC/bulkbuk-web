@@ -96,12 +96,15 @@ function useLocalBooks() {
         id: uid('book'),
         title: 'Atomic Habits',
         author: 'James Clear',
-        summary: 'Tiny changes, remarkable results — an easy & proven way to build good habits and break bad ones.',
-        categories: ['Self-Improvement'],
-        tags: ['habits', 'productivity'],
-        coverUrl: PLACEHOLDER_COVER,
+        summary: 'Transform your life through the power of tiny, incremental changes. Atomic Habits reveals practical strategies for building good habits and breaking bad ones. Learn how small adjustments in behavior can compound over time to deliver remarkable results. Perfect for anyone seeking sustainable self-improvement and lasting personal growth.',
+        categories: ['Self-Improvement', 'Productivity'],
+        tags: ['habits', 'productivity', '9780735211292'],
+        coverUrl: '/covers/atomic-habits.svg',
         audioUrl: null,
-        notes: [ { id: uid('note'), title: 'Core Idea', content: 'Focus on systems, not goals.' } ],
+        notes: [ 
+          { id: uid('note'), title: 'Core Principle', content: 'Focus on systems, not goals. Build identity-based habits instead of outcome-based ones.' },
+          { id: uid('note'), title: 'Key Insight', content: '1% improvement every day compounds to 37x better over a year (1.01^365 = 37.78).' }
+        ],
         published: true,
         createdAt: now,
         updatedAt: now,
@@ -110,12 +113,15 @@ function useLocalBooks() {
         id: uid('book'),
         title: 'Deep Work',
         author: 'Cal Newport',
-        summary: 'Rules for focused success in a distracted world. Practical strategies for producing at an elite level.',
-        categories: ['Productivity'],
-        tags: ['focus', 'work'],
-        coverUrl: PLACEHOLDER_COVER,
+        summary: 'In a world of constant distraction, the ability to focus deeply has become a superpower. Deep Work provides actionable strategies for achieving elite-level productivity and performing at your best. Discover how to minimize distractions, structure your work environment, and cultivate deep focus to produce meaningful, high-quality work that stands out.',
+        categories: ['Productivity', 'Career'],
+        tags: ['focus', 'work', 'success', '9780465053032'],
+        coverUrl: '/covers/deep-work.svg',
         audioUrl: null,
-        notes: [],
+        notes: [
+          { id: uid('note'), title: 'Definition', content: 'Deep Work: Professional activities performed in a state of unbroken concentration that push your abilities to their limit.' },
+          { id: uid('note'), title: 'Key Strategy', content: 'Structure your day with uninterrupted blocks for deep work. Schedule shallow work (emails, meetings) separately.' }
+        ],
         published: true,
         createdAt: now,
         updatedAt: now,
@@ -124,12 +130,15 @@ function useLocalBooks() {
         id: uid('book'),
         title: 'The Pragmatic Programmer',
         author: 'Andrew Hunt & David Thomas',
-        summary: 'A practical guide to modern software craftsmanship and pragmatic techniques.',
-        categories: ['Software'],
-        tags: ['engineering', 'best-practices'],
-        coverUrl: PLACEHOLDER_COVER,
+        summary: 'Essential wisdom for modern software developers. The Pragmatic Programmer shares time-tested practices, tips, and techniques for writing better code and becoming a more effective engineer. From debugging strategies to career development, this book delivers practical guidance that directly improves your craft and professional life.',
+        categories: ['Software', 'Programming'],
+        tags: ['engineering', 'best-practices', 'development', '9780201616224'],
+        coverUrl: '/covers/pragmatic-programmer.svg',
         audioUrl: null,
-        notes: [],
+        notes: [
+          { id: uid('note'), title: 'Philosophy', content: 'Programmers should take responsibility for their code and become craftspeople dedicated to their work.' },
+          { id: uid('note'), title: 'Practical Tip', content: 'Always use version control, automate repetitive tasks, and write code that is easy for others to understand.' }
+        ],
         published: true,
         createdAt: now,
         updatedAt: now,
@@ -256,55 +265,55 @@ function FileDrop({ label, accept, onFile, previewUrl }) {
 
 function BookCard({ book, onOpen, isAdmin, onEdit, onDelete }) {
   return (
-    <Card className="rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col h-full">
-      <CardHeader className="pb-3">
-        <div className="space-y-1">
-          <CardTitle className="text-lg leading-tight line-clamp-2">{book.title}</CardTitle>
-          <CardDescription className="text-xs">{book.author}</CardDescription>
+    <Card className="rounded-3xl shadow-md hover:shadow-xl transition overflow-hidden flex flex-col h-full bg-gradient-to-br from-card to-card/95">
+      <CardHeader className="pb-4 pt-6 px-6">
+        <div className="space-y-2">
+          <CardTitle className="text-xl leading-tight line-clamp-2">{book.title}</CardTitle>
+          <CardDescription className="text-sm">{book.author}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 pb-3 flex-1">
-        <div className="flex gap-3 h-full">
+      <CardContent className="pt-0 pb-4 px-6 flex-1">
+        <div className="flex gap-5 h-full">
           <div className="flex-shrink-0">
             {book.coverUrl ? (
-              <img src={book.coverUrl} alt={book.title} className="w-20 h-28 object-cover rounded-lg" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
+              <img src={book.coverUrl} alt={book.title} className="w-24 h-32 object-cover rounded-xl shadow-md" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
             ) : (
-              <div className="w-20 h-28 rounded-lg bg-muted flex items-center justify-center">
-                <BookOpen className="w-6 h-6 opacity-40"/>
+              <div className="w-24 h-32 rounded-xl bg-muted flex items-center justify-center shadow-md">
+                <BookOpen className="w-8 h-8 opacity-40"/>
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0 flex flex-col justify-between">
-            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3">{book.summary}</p>
-            <div className="flex flex-wrap gap-1 mt-2">
+            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-4">{book.summary}</p>
+            <div className="flex flex-wrap gap-2 mt-3">
               {book.categories?.slice(0, 2).map((c) => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
               {book.tags?.slice(0, 2).map((t) => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
             </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 pt-3 border-t bg-muted/30">
+      <CardFooter className="flex flex-col gap-3 pt-4 pb-6 px-6 border-t bg-muted/20">
         <div className="w-full flex items-center gap-2 justify-between">
           <div className="text-xs text-muted-foreground">{new Date(book.createdAt).toLocaleDateString()}</div>
-          <Button size="sm" onClick={() => onOpen(book)} className="text-xs h-8">View Details</Button>
+          <Button size="sm" onClick={() => onOpen(book)} className="text-sm h-9 px-4">View Details</Button>
         </div>
         {isAdmin && (
-          <div className="w-full flex gap-2">
+          <div className="w-full flex gap-3">
             <Button 
               size="sm" 
               variant="outline" 
               onClick={() => onEdit(book)} 
-              className="flex-1 text-xs h-8 justify-center"
+              className="flex-1 text-sm h-9 justify-center"
             >
-              <Pencil className="w-3 h-3 mr-1"/> Edit
+              <Pencil className="w-4 h-4 mr-2"/> Edit
             </Button>
             <Button 
               size="sm" 
               variant="destructive" 
               onClick={() => onDelete(book.id)} 
-              className="flex-1 text-xs h-8 justify-center"
+              className="flex-1 text-sm h-9 justify-center"
             >
-              <Trash2 className="w-3 h-3 mr-1"/> Delete
+              <Trash2 className="w-4 h-4 mr-2"/> Delete
             </Button>
           </div>
         )}
@@ -396,6 +405,43 @@ function AdminEditor({ initial, onSave, onCancel }) {
 
   const noteTitleRef = useRef(null);
   const noteContentRef = useRef(null);
+  const debounceRef = useRef(null);
+
+  // Suggestive search: auto-search as user types (with debounce)
+  const handleGbQueryChange = (value) => {
+    setGbQuery(value);
+    setGbError(null);
+    
+    // Clear previous debounce
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    
+    if (!value.trim()) {
+      setGbResults([]);
+      return;
+    }
+
+    // Debounce search by 500ms
+    debounceRef.current = setTimeout(async () => {
+      setGbLoading(true);
+      try {
+        const results = await searchBooks(value.trim(), 6);
+        setGbResults(results || []);
+        if (!results || results.length === 0) setGbError('No results found');
+      } catch (err) {
+        setGbError(err?.message || String(err));
+        setGbResults([]);
+      } finally {
+        setGbLoading(false);
+      }
+    }, 500);
+  };
+
+  const handleGbSearchEnter = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    handleGbSearch();
+  };
 
   const addNote = () => {
     const t = noteTitleRef.current?.value.trim();
@@ -519,7 +565,12 @@ function AdminEditor({ initial, onSave, onCancel }) {
         <div className="space-y-2">
           <Label className="text-sm font-medium">Search Google Books</Label>
           <div className="flex gap-2">
-            <Input placeholder="ISBN, title or author" value={gbQuery} onChange={(e) => setGbQuery(e.target.value)} />
+            <Input 
+              placeholder="Type book title or author..." 
+              value={gbQuery} 
+              onChange={(e) => handleGbQueryChange(e.target.value)}
+              onKeyDown={handleGbSearchEnter}
+            />
             <Button onClick={handleGbSearch} disabled={gbLoading} className="whitespace-nowrap">
               {gbLoading ? 'Searching…' : 'Search'}
             </Button>
@@ -586,6 +637,18 @@ export default function BulkBukApp() {
   const [editing, setEditing] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  // Notifications
+  const [notifications, setNotifications] = useState([]);
+  const notify = (message, type = "info", ttl = 4000) => {
+    const id = uid('note');
+    setNotifications((n) => [...n, { id, message, type }]);
+    setTimeout(() => setNotifications((n) => n.filter((x) => x.id !== id)), ttl);
+  };
+
+  // Duplicate save flow
+  const [pendingSave, setPendingSave] = useState(null);
+  const [duplicateMatch, setDuplicateMatch] = useState(null);
+  const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -612,7 +675,7 @@ export default function BulkBukApp() {
     setShowEditor(true);
   };
 
-  const saveBook = (payload) => {
+  const doSave = (payload) => {
     setBooks((prev) => {
       const exists = prev.some((p) => p.id === payload.id);
       const next = exists ? prev.map((p) => (p.id === payload.id ? payload : p)) : [payload, ...prev];
@@ -620,6 +683,48 @@ export default function BulkBukApp() {
     });
     setShowEditor(false);
     setEditing(null);
+    notify(payload.title ? `Saved: ${payload.title}` : 'Saved', 'success');
+  };
+
+  const saveBook = (payload) => {
+    // Duplicate detection: look for existing book with same title+author (case-insensitive)
+    const normalizedTitle = (payload.title || '').trim().toLowerCase();
+    const normalizedAuthor = (payload.author || '').trim().toLowerCase();
+    const existing = books.find((b) => {
+      if (!b.title) return false;
+      if (b.id === payload.id) return false; // editing same book
+      const t = (b.title || '').trim().toLowerCase();
+      const a = (b.author || '').trim().toLowerCase();
+      if (t && a && t === normalizedTitle && a === normalizedAuthor) return true;
+      // also check tags for ISBN-like match (simple numeric length check)
+      const intersection = (b.tags || []).filter((tag) => (payload.tags || []).includes(tag));
+      if (intersection.length) return true;
+      return false;
+    });
+
+    if (existing) {
+      setPendingSave(payload);
+      setDuplicateMatch(existing);
+      setShowDuplicateConfirm(true);
+      notify('Possible duplicate detected', 'warning', 5000);
+      return;
+    }
+    doSave(payload);
+  };
+
+  const confirmSave = () => {
+    if (!pendingSave) return;
+    doSave(pendingSave);
+    setPendingSave(null);
+    setDuplicateMatch(null);
+    setShowDuplicateConfirm(false);
+  };
+
+  const cancelDuplicateSave = () => {
+    setPendingSave(null);
+    setDuplicateMatch(null);
+    setShowDuplicateConfirm(false);
+    notify('Save canceled', 'info');
   };
 
   const deleteBook = (id) => {
@@ -738,6 +843,45 @@ export default function BulkBukApp() {
           <AdminEditor initial={editing || null} onSave={saveBook} onCancel={() => setShowEditor(false)} />
         </DialogContent>
       </Dialog>
+
+      {/* Duplicate confirmation dialog */}
+      <Dialog open={showDuplicateConfirm} onOpenChange={setShowDuplicateConfirm}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Possible Duplicate</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm">We found an existing book that looks similar to the one you're saving:</p>
+            {duplicateMatch ? (
+              <div className="flex gap-4 items-start">
+                <img src={duplicateMatch.coverUrl || PLACEHOLDER_COVER} alt="duplicate" className="w-16 h-20 object-cover rounded" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{duplicateMatch.title}</div>
+                  <div className="text-xs text-muted-foreground truncate">{duplicateMatch.author}</div>
+                  <div className="text-xs text-muted-foreground mt-2 line-clamp-3">{duplicateMatch.summary}</div>
+                </div>
+              </div>
+            ) : null}
+            <div className="flex gap-2">
+              <Button onClick={confirmSave} className="flex-1">Overwrite and Save</Button>
+              <Button variant="outline" onClick={cancelDuplicateSave} className="flex-1">Cancel</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notifications stack */}
+      <div className="fixed right-4 bottom-4 space-y-2 z-50">
+        <AnimatePresence>
+          {notifications.map((n) => (
+            <motion.div key={n.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+              <div className={`rounded-lg shadow p-3 max-w-xs ${n.type === 'success' ? 'bg-green-600 text-white' : n.type === 'warning' ? 'bg-yellow-500 text-black' : 'bg-gray-800 text-white'}`}>
+                <div className="text-sm">{n.message}</div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       {/* Admin auth dialog */}
       <Dialog open={showAuth} onOpenChange={setShowAuth}>
