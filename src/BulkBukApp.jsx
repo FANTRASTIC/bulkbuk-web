@@ -36,6 +36,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { searchBooks, imageUrlToDataUrl } from "@/services/googleBooksService";
 
 // -----------------------------
 // Helpers & Types
@@ -387,6 +388,12 @@ function AdminEditor({ initial, onSave, onCancel }) {
   const [coverUrl, setCoverUrl] = useState(initial?.coverUrl || null);
   const [audioUrl, setAudioUrl] = useState(initial?.audioUrl || null);
 
+  // Google Books integration states
+  const [gbQuery, setGbQuery] = useState("");
+  const [gbLoading, setGbLoading] = useState(false);
+  const [gbResults, setGbResults] = useState([]);
+  const [gbError, setGbError] = useState(null);
+
   const noteTitleRef = useRef(null);
   const noteContentRef = useRef(null);
 
@@ -418,6 +425,46 @@ function AdminEditor({ initial, onSave, onCancel }) {
       createdAt: initial?.createdAt || new Date().toISOString(),
     };
     onSave(payload);
+  };
+
+  const handleGbSearch = async () => {
+    const q = (gbQuery || `${title} ${author}`).trim();
+    if (!q) return setGbError('Please enter a search term or fill title/author');
+    setGbLoading(true);
+    setGbError(null);
+    try {
+      const results = await searchBooks(q, 6);
+      setGbResults(results || []);
+      if (!results || results.length === 0) setGbError('No results found');
+    } catch (err) {
+      setGbError(err?.message || String(err));
+      setGbResults([]);
+    } finally {
+      setGbLoading(false);
+    }
+  };
+
+  const handleUseGb = (g) => {
+    if (!g) return;
+    setTitle(g.title || title);
+    setAuthor((g.authors && g.authors.join(', ')) || author);
+    setSummary(g.description || summary);
+    setCategories(g.categories || categories);
+    // leave tags as-is so user can add their own
+    if (g.image) {
+      // try to convert remote image to data URL to avoid hotlinking; fall back to remote URL
+      imageUrlToDataUrl(g.image).then((data) => {
+        setCoverUrl(data || g.image);
+      }).catch(() => setCoverUrl(g.image));
+    }
+    // pull ISBN if available and set as tag
+    const isbn = (g.industryIdentifiers && g.industryIdentifiers.find(i => i.type && i.identifier))?.identifier;
+    if (isbn) setTags((t) => Array.from(new Set([...(t||[]), isbn])));
+    // scroll to top of editor so user sees the populated fields
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    // clear results after selection
+    setGbResults([]);
+    setGbQuery('');
   };
 
   return (
@@ -469,6 +516,33 @@ function AdminEditor({ initial, onSave, onCancel }) {
         </div>
       </div>
       <div className="md:col-span-2 space-y-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Search Google Books</Label>
+          <div className="flex gap-2">
+            <Input placeholder="ISBN, title or author" value={gbQuery} onChange={(e) => setGbQuery(e.target.value)} />
+            <Button onClick={handleGbSearch} disabled={gbLoading} className="whitespace-nowrap">
+              {gbLoading ? 'Searching…' : 'Search'}
+            </Button>
+          </div>
+          {gbError ? <p className="text-xs text-destructive mt-1">{gbError}</p> : null}
+          {gbResults.length ? (
+            <div className="grid grid-cols-1 gap-2 mt-2">
+              {gbResults.map((r) => (
+                <div key={r.id} className="flex items-center gap-3 rounded-lg border p-2">
+                  <img src={r.image || PLACEHOLDER_COVER} alt={r.title} className="w-12 h-16 object-cover rounded" onError={(e) => (e.currentTarget.src = PLACEHOLDER_COVER)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium line-clamp-2">{r.title}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{(r.authors || []).join(', ')}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{(r.categories || []).slice(0,2).join(', ')}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={() => handleUseGb(r)}>Use this</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <FileDrop label="Cover Image" accept="image/*" onFile={({ url, dataUrl }) => setCoverUrl(dataUrl || url)} previewUrl={coverUrl} />
         <FileDrop label="Audio Overview (MP3/M4A)" accept="audio/*" onFile={({ url }) => setAudioUrl(url)} previewUrl={audioUrl} />
         <div className="flex items-center justify-between rounded-2xl border p-4">
