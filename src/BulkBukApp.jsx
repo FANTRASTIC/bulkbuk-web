@@ -36,6 +36,9 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { useRouter } from "@/router";
+import { PublicGallery } from "@/components/PublicGallery";
+import { AdminPanel } from "@/components/AdminPanel";
 
 // -----------------------------
 // Helpers & Types
@@ -483,14 +486,15 @@ function AdminEditor({ initial, onSave, onCancel }) {
 }
 
 export default function BulkBukApp() {
+  const { currentPath, navigate } = useRouter();
   const { isAdmin, login, logout } = useAdminMode();
+  
   // Theme handling (light/dark) persisted in localStorage
   const [theme, setTheme] = useState(() => {
     try {
       const t = localStorage.getItem('bulkbuk.theme');
       if (t) return t;
     } catch (e) {}
-    // default to system if not set
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   });
 
@@ -500,177 +504,46 @@ export default function BulkBukApp() {
     document.documentElement.classList.add(cls);
     try { localStorage.setItem('bulkbuk.theme', theme); } catch (e) {}
   }, [theme]);
+
   const [books, setBooks] = useLocalBooks();
-  const [query, setQuery] = useState("");
-  const [onlyPublished, setOnlyPublished] = useState(true);
-  const [selected, setSelected] = useState(null);
-  const [editing, setEditing] = useState(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    return books
-      .filter((b) => (onlyPublished ? b.published : true))
-      .filter((b) =>
-        q
-          ? [b.title, b.author, b.summary, ...(b.categories||[]), ...(b.tags||[])]
-              .join(" ")
-              .toLowerCase()
-              .includes(q)
-          : true
-      )
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [books, query, onlyPublished]);
+  // Determine which view to show based on route
+  const isAdminRoute = currentPath === '/admin';
 
-  const openCreate = () => {
-    setEditing(null);
-    setShowEditor(true);
+  // Handle login with redirect
+  const handleAdminLogin = (key) => {
+    if (login(key)) {
+      navigate('/admin');
+      return true;
+    }
+    return false;
   };
 
-  const openEdit = (book) => {
-    setEditing(book);
-    setShowEditor(true);
+  // Handle logout with redirect
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
-  const saveBook = (payload) => {
-    setBooks((prev) => {
-      const exists = prev.some((p) => p.id === payload.id);
-      const next = exists ? prev.map((p) => (p.id === payload.id ? payload : p)) : [payload, ...prev];
-      return next;
-    });
-    setShowEditor(false);
-    setEditing(null);
-  };
-
-  const deleteBook = (id) => {
-    setBooks((prev) => prev.filter((p) => p.id !== id));
-    if (selected?.id === id) setSelected(null);
-  };
-
-  const [adminKey, setAdminKey] = useState("");
-  const handleLogin = () => {
-    const ok = login(adminKey.trim());
-    if (!ok) alert("Invalid admin key (demo: bulkbuk_admin_demo_key)");
-    setAdminKey("");
-    setShowAuth(false);
-  };
+  if (isAdminRoute && isAdmin) {
+    return (
+      <AdminPanel
+        books={books}
+        setBooks={setBooks}
+        onLogout={handleLogout}
+        onReturn={() => navigate('/')}
+        theme={theme}
+        setTheme={setTheme}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <BookOpen className="w-6 h-6" />
-          <h1 className="text-xl font-semibold tracking-tight">BulkBuk</h1>
-          <Badge className="ml-2" variant="secondary">Books • Summaries • Audio Overviews</Badge>
-          <div className="ml-auto flex items-center gap-3">
-            {/* Theme toggle */}
-            <Button variant="ghost" size="sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
-              {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </Button>
-
-            {isAdmin ? (
-              <>
-                <Button variant="outline" size="sm" onClick={openCreate}><Plus className="w-4 h-4 mr-2"/>New Book</Button>
-                <Button variant="ghost" size="sm" onClick={logout}><LogOut className="w-4 h-4 mr-2"/>Exit Admin</Button>
-              </>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => setShowAuth(true)}><Shield className="w-4 h-4 mr-2"/>Admin</Button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Search & Filters */}
-        <Card className="rounded-2xl">
-          <CardContent className="pt-6">
-            <div className="grid sm:grid-cols-3 gap-3">
-              <div className="sm:col-span-2 flex items-center gap-2 rounded-xl border px-3">
-                <Search className="w-4 h-4"/>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full h-10 bg-transparent outline-none text-sm"
-                  placeholder="Search by title, author, tag…"
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-xl border px-4">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4"/>
-                  <span className="text-sm">Only Published</span>
-                </div>
-                <Switch checked={onlyPublished} onCheckedChange={setOnlyPublished} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((b) => (
-            <motion.div key={b.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <BookCard
-                book={b}
-                onOpen={(bk) => setSelected(bk)}
-                isAdmin={isAdmin}
-                onEdit={openEdit}
-                onDelete={deleteBook}
-              />
-            </motion.div>
-          ))}
-          {filtered.length === 0 ? (
-            <div className="col-span-full text-center text-sm text-muted-foreground p-10 border rounded-2xl">
-              No books yet. {isAdmin ? "Use New Book to add your first entry." : "Please check back soon!"}
-            </div>
-          ) : null}
-        </div>
-      </main>
-
-      {/* Book modal */}
-      <BookModal open={Boolean(selected)} onOpenChange={(v) => !v && setSelected(null)} book={selected} />
-
-      {/* Admin editor dialog */}
-      <Dialog open={showEditor} onOpenChange={setShowEditor}>
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit Book" : "Create Book"}</DialogTitle>
-          </DialogHeader>
-          <AdminEditor initial={editing || null} onSave={saveBook} onCancel={() => setShowEditor(false)} />
-        </DialogContent>
-      </Dialog>
-
-      {/* Admin auth dialog */}
-      <Dialog open={showAuth} onOpenChange={setShowAuth}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Shield className="w-5 h-5"/> Admin Access</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Enter your admin key to access the dashboard tools.</p>
-            <Input
-              type="password"
-              placeholder="Admin key"
-              value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
-            />
-            <div className="flex gap-2">
-              <Button className="flex-1" onClick={handleLogin}><LogIn className="w-4 h-4 mr-2"/>Sign in</Button>
-              <Button className="flex-1" variant="outline" onClick={() => setShowAuth(false)}>Cancel</Button>
-            </div>
-            <p className="text-xs text-muted-foreground">Demo key: <code>bulkbuk_admin_demo_key</code></p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <footer className="border-t mt-10">
-        <div className="max-w-6xl mx-auto px-4 py-8 text-xs text-muted-foreground flex flex-wrap items-center gap-2">
-          <span>© {new Date().getFullYear()} BulkBuk</span>
-          <span className="mx-2">•</span>
-          <span>Find concise summaries and audio overviews of great books.</span>
-        </div>
-      </footer>
-    </div>
+    <PublicGallery
+      books={books}
+      theme={theme}
+      setTheme={setTheme}
+      onAdmin={() => navigate('/admin')}
+    />
   );
 }
