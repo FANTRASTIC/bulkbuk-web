@@ -23,7 +23,13 @@ export function Button({ children, className = '', variant, size, style: userSty
     color: 'var(--text)',
   }
 
-  const chosen = variant === 'outline' ? outlineStyle : variant === 'ghost' ? ghostStyle : primaryStyle
+  const destructiveStyle = {
+    backgroundColor: '#dc2626',
+    color: 'white',
+    borderColor: 'transparent',
+  }
+
+  const chosen = variant === 'outline' ? outlineStyle : variant === 'ghost' ? ghostStyle : variant === 'destructive' ? destructiveStyle : variant === 'secondary' ? outlineStyle : primaryStyle
 
   return (
     <button className={baseClasses} style={{ ...chosen, ...userStyle }} {...props}>
